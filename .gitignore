@@ -1,0 +1,14 @@
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+.bundle/
+vendor/
+node_modules/
+
+# Generated files
+_schemas/*.md
+changelog.md
+versioning.md
+assets/viewer.js
+assets/viewer.js.map

@@ -1,0 +1,17 @@
+{
+  "name": "sourdough-website",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "esbuild src/viewer.js --bundle --outfile=../assets/viewer.js --minify --sourcemap --loader:.css=text --format=esm",
+    "dev": "esbuild src/viewer.js --bundle --outfile=../assets/viewer.js --watch --sourcemap --loader:.css=text --format=esm"
+  },
+  "dependencies": {
+    "@turf/turf": "^7.2.0",
+    "maplibre-gl": "^4.7.1",
+    "redom": "^4.3.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}

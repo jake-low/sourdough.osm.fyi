@@ -1,0 +1,12 @@
+---
+layout: default
+---
+
+<p>
+  <strong>Version:</strong> {{ page.version | default: "current" }}
+  {% if page.date %}
+   • <strong>Date:</strong> <time datetime="{{ page.date }}">{{ page.date | date: "%B %d, %Y" }}</time>
+  {% endif %}
+</p>
+
+{{ content }}

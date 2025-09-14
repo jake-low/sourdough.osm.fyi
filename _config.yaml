@@ -1,0 +1,20 @@
+title: Sourdough
+description: Free vector tiles for OpenStreetMap data
+url: https://sourdough.osm.fyi
+baseurl: ""
+
+markdown: kramdown
+highlighter: rouge
+permalink: /:title/
+
+collections:
+  schemas:
+    output: true
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - sourdough/
+  - Makefile
+  - viewer/

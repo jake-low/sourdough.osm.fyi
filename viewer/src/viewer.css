@@ -1,0 +1,19 @@
+/* MapLibre zoom control styling */
+.zoom-control {
+  background-color: #fff;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-family: monospace;
+  border-radius: 4px;
+}
+
+/* Legend styling */
+.legend-all-checkbox {
+  accent-color: #888;
+}
+
+.legend-all-text {
+  font-weight: bold;
+}
+
+/* .legend-checkbox accent-color is set dynamically in JavaScript */
