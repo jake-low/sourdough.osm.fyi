@@ -30,6 +30,7 @@ jobs:
           cache-dependency-path: viewer/package-lock.json
 
       - run: cd viewer && npm install
+      - run: npm install
 
       - uses: actions/configure-pages@v4
 
