@@ -10,11 +10,17 @@ permalink: /:title/
 collections:
   schemas:
     output: true
+  examples:
+    output: true
 
 exclude:
+  - README.md
+  - Makefile
   - Gemfile
   - Gemfile.lock
-  - README.md
+  - package.json
+  - package-lock.json
+  - node_modules/
   - sourdough/
-  - Makefile
+  - examples/
   - viewer/

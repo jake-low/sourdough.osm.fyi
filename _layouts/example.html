@@ -1,0 +1,36 @@
+---
+layout: default
+---
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.8.0/dist/maplibre-gl.css">
+
+<div id="example-map"></div>
+<script type="module">
+  import maplibregl from 'https://cdn.jsdelivr.net/npm/maplibre-gl@5.8.0/+esm';
+
+  const styleUrl = '/assets/examples/{{ page.example_name }}.json';
+
+  async function init() {
+    let res = await fetch(styleUrl);
+    let style = await res.json();
+    
+    const map = new maplibregl.Map({
+      container: 'example-map',
+      style: style,
+      hash: true,
+      dragRotate: false,
+      pitchWithRotate: false,
+      touchZoomRotate: false,
+    });
+
+    map.addControl(new maplibregl.NavigationControl());
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+</script>
+
+{{ content }}

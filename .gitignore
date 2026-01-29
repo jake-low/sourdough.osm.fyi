@@ -8,7 +8,10 @@ node_modules/
 
 # Generated files
 _schemas/*.md
+_examples/*.md
 changelog.md
 versioning.md
+examples.md
 assets/viewer.js
 assets/viewer.js.map
+assets/examples/

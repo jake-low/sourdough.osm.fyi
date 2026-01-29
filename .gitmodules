@@ -1,3 +1,6 @@
 [submodule "sourdough"]
 	path = sourdough
 	url = https://github.com/jake-low/sourdough.git
+[submodule "examples"]
+	path = examples
+	url = https://github.com/jake-low/sourdough-examples.git

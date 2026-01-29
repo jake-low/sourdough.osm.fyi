@@ -1,11 +1,11 @@
-.PHONY: build serve clean schemas js changelog
+.PHONY: build serve clean schemas js changelog examples
 
 # Build the site
-build: schemas changelog js
+build: schemas changelog examples js
 	bundle exec jekyll build
 
 # Serve locally
-serve: schemas changelog js
+serve: schemas changelog examples js
 	bundle exec jekyll serve
 
 # Build JavaScript assets
@@ -14,7 +14,7 @@ js:
 
 # Clean generated files
 clean:
-	rm -rf _site _schemas/*.md assets/viewer.js* changelog.md viewer/node_modules
+	rm -rf _site _schemas/*.md _examples/*.md assets/viewer.js* assets/examples/ changelog.md examples.md viewer/node_modules node_modules
 
 # Generate schema documentation files
 schemas:
@@ -68,3 +68,75 @@ changelog:
 	else \
 		echo "Warning: sourdough/CHANGELOG.md not found"; \
 	fi
+
+# Generate example pages
+examples:
+	@echo "Generating examples..."
+	@mkdir -p _examples
+	@mkdir -p assets/examples
+	@mkdir -p assets/examples/previews
+
+	# Build example stylesheets
+	@for dir in examples/*/; do \
+		if [ -f "$$dir/README.md" ]; then \
+			example=$$(basename $$dir); \
+			if [ -f "$$dir/style.js" ]; then \
+				echo "Building stylesheet for $$example..."; \
+				(cd examples && node build.js $$example) > assets/examples/$$example.json; \
+			else \
+				echo "Skipping $$example (no style.js found)"; \
+			fi; \
+		fi; \
+	done
+
+	# Generate preview images
+	@for dir in examples/*/; do \
+		if [ -f "$$dir/README.md" ] && [ -f "$$dir/style.js" ]; then \
+			example=$$(basename $$dir); \
+			echo "Generating preview for $$example..."; \
+			center=$$(jq -r '.center // [15, 35] | @csv' assets/examples/$$example.json | tr -d '"'); \
+			zoom=$$(jq -r '.zoom // 1' assets/examples/$$example.json); \
+			npx mbgl-render assets/examples/$$example.json assets/examples/previews/$$example.png 400 300 -c $$center -z $$zoom -r 2 > /dev/null 2>&1; \
+		fi; \
+	done
+
+	# Create examples gallery page
+	@echo "---" > examples.md; \
+	echo "layout: default" >> examples.md; \
+	echo "title: Examples" >> examples.md; \
+	echo "permalink: /examples/" >> examples.md; \
+	echo "---" >> examples.md; \
+	echo "" >> examples.md; \
+	echo "Example map styles using Sourdough tiles." >> examples.md; \
+	echo "" >> examples.md; \
+	echo "<ul class=\"example-gallery\">" >> examples.md; \
+	for dir in examples/*/; do \
+		if [ -f "$$dir/README.md" ] && [ -f "$$dir/style.js" ]; then \
+			example=$$(basename $$dir); \
+			echo "  <li>" >> examples.md; \
+			echo "    <a href=\"/examples/$$example/\">" >> examples.md; \
+			echo "      <img src=\"/assets/examples/previews/$$example.png\" alt=\"$$example preview\">" >> examples.md; \
+			echo "      <span>$$example</span>" >> examples.md; \
+			echo "    </a>" >> examples.md; \
+			echo "  </li>" >> examples.md; \
+		fi; \
+	done; \
+	echo "</ul>" >> examples.md; \
+	echo "Created examples gallery page"
+
+	# Generate individual example pages
+	@for dir in examples/*/; do \
+		if [ -f "$$dir/README.md" ] && [ -f "$$dir/style.js" ]; then \
+			example=$$(basename $$dir); \
+			echo "Processing example $$example..."; \
+			echo "---" > _examples/$$example.md; \
+			echo "layout: example" >> _examples/$$example.md; \
+			echo "title: $$example" >> _examples/$$example.md; \
+			echo "permalink: /examples/$$example/" >> _examples/$$example.md; \
+			echo "example_name: $$example" >> _examples/$$example.md; \
+			echo "---" >> _examples/$$example.md; \
+			echo "" >> _examples/$$example.md; \
+			cat $$dir/README.md | sed '1{/^# /d;}' >> _examples/$$example.md; \
+			echo "Created example page for $$example"; \
+		fi; \
+	done
