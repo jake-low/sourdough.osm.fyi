@@ -96,7 +96,7 @@ examples:
 			echo "Generating preview for $$example..."; \
 			center=$$(jq -r '.center // [15, 35] | @csv' assets/examples/$$example.json | tr -d '"'); \
 			zoom=$$(jq -r '.zoom // 1' assets/examples/$$example.json); \
-			npx mbgl-render assets/examples/$$example.json assets/examples/previews/$$example.png 400 300 -c $$center -z $$zoom -r 2 > /dev/null 2>&1; \
+			npx mbgl-render assets/examples/$$example.json assets/examples/previews/$$example.png 400 300 -c $$center -z $$zoom -r 2; \
 		fi; \
 	done
 
