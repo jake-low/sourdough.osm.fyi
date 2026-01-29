@@ -34,7 +34,7 @@ jobs:
 
       - uses: actions/configure-pages@v4
 
-      - run: sudo apt update && sudo apt install -y libgl1-mesa-glx libglu1-mesa xvfb
+      - run: sudo apt update && sudo apt install -y libgl1 libglx-mesa0 libegl-mesa0 libglu1-mesa xvfb
 
       - run: make build
         env:
