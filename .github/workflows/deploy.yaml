@@ -18,30 +18,17 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: '3.4.5'
-          bundler-cache: true
+      - name: Build Docker image
+        run: docker build -t sourdough-website-builder .
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: npm
-          cache-dependency-path: viewer/package-lock.json
-
-      - run: cd viewer && npm install
-      - run: npm install
+      - name: Build site with Docker
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/_site:/workspace/_site \
+            -e JEKYLL_ENV=production \
+            sourdough-website-builder
 
       - uses: actions/configure-pages@v4
-
-      - run: sudo apt update && sudo apt install -y libgl1 libglx-mesa0 libegl-mesa0 libglu1-mesa xvfb
-
-      - name: Rebuild native modules
-        run: npm rebuild @maplibre/maplibre-gl-native
-
-      - run: make build
-        env:
-          JEKYLL_ENV: production
 
       - uses: actions/upload-pages-artifact@v3
 
