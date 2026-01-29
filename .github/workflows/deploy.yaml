@@ -36,6 +36,9 @@ jobs:
 
       - run: sudo apt update && sudo apt install -y libgl1 libglx-mesa0 libegl-mesa0 libglu1-mesa xvfb
 
+      - name: Rebuild native modules
+        run: npm rebuild @maplibre/maplibre-gl-native
+
       - run: make build
         env:
           JEKYLL_ENV: production
