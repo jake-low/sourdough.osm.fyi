@@ -29,11 +29,19 @@ RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
 # Install legacy libraries needed by prebuilt MapLibre Native binaries
 # ICU 70 and libpng 1.6.37 from Ubuntu 22.04
 RUN apt-get update && apt-get install -y wget \
-    && wget http://ports.ubuntu.com/pool/main/i/icu/libicu70_70.1-2_arm64.deb \
-    && wget http://ports.ubuntu.com/pool/main/libp/libpng1.6/libpng16-16_1.6.37-3build5_arm64.deb \
-    && dpkg -i libicu70_70.1-2_arm64.deb \
+    && ARCH=$(dpkg --print-architecture) \
+    && if [ "$ARCH" = "arm64" ]; then \
+         ICU_URL="http://ports.ubuntu.com/pool/main/i/icu/libicu70_70.1-2_arm64.deb"; \
+         PNG_URL="http://ports.ubuntu.com/pool/main/libp/libpng1.6/libpng16-16_1.6.37-3build5_arm64.deb"; \
+       else \
+         ICU_URL="http://security.ubuntu.com/ubuntu/pool/main/i/icu/libicu70_70.1-2_amd64.deb"; \
+         PNG_URL="http://security.ubuntu.com/ubuntu/pool/main/libp/libpng1.6/libpng16-16_1.6.37-3build5_amd64.deb"; \
+       fi \
+    && wget $ICU_URL -O libicu70.deb \
+    && wget $PNG_URL -O libpng16-16.deb \
+    && dpkg -i libicu70.deb \
     && dpkg --remove --force-depends libpng16-16t64 \
-    && dpkg -i libpng16-16_1.6.37-3build5_arm64.deb \
+    && dpkg -i libpng16-16.deb \
     && rm *.deb \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
