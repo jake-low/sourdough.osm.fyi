@@ -107,8 +107,6 @@ examples:
 	echo "permalink: /examples/" >> examples.md; \
 	echo "---" >> examples.md; \
 	echo "" >> examples.md; \
-	echo "Example map styles using Sourdough tiles." >> examples.md; \
-	echo "" >> examples.md; \
 	echo "<ul class=\"example-gallery\">" >> examples.md; \
 	for dir in examples/*/; do \
 		if [ -f "$$dir/README.md" ] && [ -f "$$dir/style.js" ]; then \
