@@ -492,9 +492,17 @@ export async function createViewer(container, tileJsonUrl, options = {}) {
       });
     }
 
+    const STYLE_LAYER_SUFFIXES = [
+      "polygons", "lines", "points",
+      "point_labels", "line_labels", "polygon_labels",
+    ];
+
     function toggleLayerVisibility(layerName, visible) {
+      const styleLayerIds = new Set(
+        STYLE_LAYER_SUFFIXES.map((suffix) => `sourdough_${layerName}_${suffix}`)
+      );
       for (const layerId of map.getLayersOrder()) {
-        if (layerId.startsWith(`sourdough_${layerName}`)) {
+        if (styleLayerIds.has(layerId)) {
           map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
         }
       }
