@@ -76,6 +76,8 @@ examples:
 	@mkdir -p assets/examples
 	@mkdir -p assets/examples/previews
 
+	cd examples && npm install
+
 	# Build example stylesheets
 	@for dir in examples/*/; do \
 		if [ -f "$$dir/README.md" ]; then \
