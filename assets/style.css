@@ -176,7 +176,7 @@ pre code {
 }
 
 /* Dark theme for MapLibre controls to match the dark map */
-.maplibregl-ctrl {
+.map-wrapper .maplibregl-ctrl {
   filter: invert(1) hue-rotate(180deg);
 }
 
@@ -238,7 +238,7 @@ pre code {
   white-space: pre;
 }
 
-.maplibregl-ctrl-attrib a {
+.map-wrapper .maplibregl-ctrl-attrib a {
   color: #0055bb !important;
 }
 
@@ -250,12 +250,110 @@ pre code {
   overflow: hidden;
 }
 
+/* Showcase: a full-width map for examples that are complete map styles */
+.showcase {
+  margin: 1.5em 0 2em;
+  box-sizing: border-box;
+  padding: 0 1em;
+}
+
+@supports (width: 1cqw) {
+  .showcase {
+    position: relative;
+    width: 100cqw;
+    left: calc(-50cqw + 50%);
+  }
+}
+
+.showcase-toolbar {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.showcase-panes {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.showcase.comparing .showcase-panes {
+  max-width: 1600px;
+}
+
+.showcase-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5em 1.5em;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.5em;
+}
+
+.showcase-toolbar label {
+  cursor: pointer;
+}
+
+.showcase-panes {
+  display: flex;
+  gap: 8px;
+  height: min(75vh, 720px);
+  min-height: 400px;
+}
+
+.showcase-pane {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.showcase-pane .map {
+  position: absolute;
+  inset: 0;
+}
+
+.showcase-pane .label {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 1;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.8);
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+/* With one map on screen the page title already says which style it is */
+.showcase:not(.comparing) .showcase-pane .label {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .showcase-panes {
+    flex-direction: column;
+  }
+}
+
 .example-gallery {
   list-style: none;
   padding: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 1.5em;
+}
+
+.example-gallery.featured {
+  grid-template-columns: 1fr;
+}
+
+.example-gallery.featured img {
+  max-height: 400px;
+  object-fit: cover;
+}
+
+.example-gallery.featured span {
+  font-size: 1.1em;
 }
 
 .example-gallery li {

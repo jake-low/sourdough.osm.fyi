@@ -1,5 +1,7 @@
 .PHONY: build serve clean schemas js changelog examples
 
+FEATURED := americanish
+
 # Build the site
 build: schemas changelog examples js
 	bundle exec jekyll build
@@ -91,52 +93,90 @@ examples:
 		fi; \
 	done
 
-	# Generate preview images
+	# HACK: americanish needs icons.js runtime helper (renders shields and POI icons)
+	@mkdir -p assets/examples/$(FEATURED)
+	@cp examples/$(FEATURED)/icons.js assets/examples/$(FEATURED)/icons.js
+
+	# Generate preview images. An example can commit a preview.png to override
+	# the headless render, which is the only way to show images that the style
+	# generates client-side (like Americanish's highway shields).
 	@for dir in examples/*/; do \
 		if [ -f "$$dir/README.md" ] && [ -f "$$dir/style.js" ]; then \
 			example=$$(basename $$dir); \
-			echo "Generating preview for $$example..."; \
-			center=$$(jq -r '.center // [15, 35] | @csv' assets/examples/$$example.json | tr -d '"'); \
-			zoom=$$(jq -r '.zoom // 1' assets/examples/$$example.json); \
-			npx mbgl-render assets/examples/$$example.json assets/examples/previews/$$example.png 480 360 -c $$center -z $$zoom -r 2; \
+			if [ -f "$$dir/preview.png" ]; then \
+				echo "Using committed preview for $$example..."; \
+				cp $$dir/preview.png assets/examples/previews/$$example.png; \
+			else \
+				echo "Generating preview for $$example..."; \
+				center=$$(jq -r '.center // [15, 35] | @csv' assets/examples/$$example.json | tr -d '"'); \
+				zoom=$$(jq -r '.zoom // 1' assets/examples/$$example.json); \
+				if [ "$$example" = "$(FEATURED)" ]; then size="800 400"; else size="480 360"; fi; \
+				npx mbgl-render assets/examples/$$example.json assets/examples/previews/$$example.png $$size -c $$center -z $$zoom -r 2; \
+			fi; \
 		fi; \
 	done
 
 	# Create examples gallery page
-	@echo "---" > examples.md; \
+	@card() { \
+		title=$$(sed -n '1s/^# //p' examples/$$1/README.md); \
+		[ -n "$$title" ] || title=$$1; \
+		echo "  <li>" >> examples.md; \
+		echo "    <a href=\"/examples/$$1/\">" >> examples.md; \
+		echo "      <img src=\"/assets/examples/previews/$$1.png\" alt=\"$$title preview\">" >> examples.md; \
+		echo "      <span>$$title</span>" >> examples.md; \
+		echo "    </a>" >> examples.md; \
+		echo "  </li>" >> examples.md; \
+	}; \
+	echo "---" > examples.md; \
 	echo "layout: default" >> examples.md; \
 	echo "title: Examples" >> examples.md; \
 	echo "permalink: /examples/" >> examples.md; \
 	echo "---" >> examples.md; \
 	echo "" >> examples.md; \
+	if [ -f "examples/$(FEATURED)/style.js" ]; then \
+		echo "## Complete map styles" >> examples.md; \
+		echo "" >> examples.md; \
+		echo "General purpose basemaps built entirely from Sourdough tiles." >> examples.md; \
+		echo "" >> examples.md; \
+		echo "<ul class=\"example-gallery featured\">" >> examples.md; \
+		card $(FEATURED); \
+		echo "</ul>" >> examples.md; \
+		echo "" >> examples.md; \
+		echo "## Sample code" >> examples.md; \
+		echo "" >> examples.md; \
+		echo "Smaller examples, each showing how to work with a handful of Sourdough's layers." >> examples.md; \
+		echo "" >> examples.md; \
+	fi; \
 	echo "<ul class=\"example-gallery\">" >> examples.md; \
 	for dir in examples/*/; do \
 		if [ -f "$$dir/README.md" ] && [ -f "$$dir/style.js" ]; then \
 			example=$$(basename $$dir); \
-			echo "  <li>" >> examples.md; \
-			echo "    <a href=\"/examples/$$example/\">" >> examples.md; \
-			echo "      <img src=\"/assets/examples/previews/$$example.png\" alt=\"$$example preview\">" >> examples.md; \
-			echo "      <span>$$example</span>" >> examples.md; \
-			echo "    </a>" >> examples.md; \
-			echo "  </li>" >> examples.md; \
+			if [ "$$example" != "$(FEATURED)" ]; then card $$example; fi; \
 		fi; \
 	done; \
 	echo "</ul>" >> examples.md; \
 	echo "Created examples gallery page"
 
-	# Generate individual example pages
+	# Generate individual example pages. The README body is copied verbatim
+	# except for the title and the preview image (the page shows a live map
+	# instead).
 	@for dir in examples/*/; do \
 		if [ -f "$$dir/README.md" ] && [ -f "$$dir/style.js" ]; then \
 			example=$$(basename $$dir); \
 			echo "Processing example $$example..."; \
+			title=$$(sed -n '1s/^# //p' $$dir/README.md); \
+			[ -n "$$title" ] || title=$$example; \
+			if [ "$$example" = "$(FEATURED)" ]; then layout=showcase; else layout=example; fi; \
 			echo "---" > _examples/$$example.md; \
-			echo "layout: example" >> _examples/$$example.md; \
-			echo "title: $$example" >> _examples/$$example.md; \
+			echo "layout: $$layout" >> _examples/$$example.md; \
+			echo "title: \"$$title\"" >> _examples/$$example.md; \
 			echo "permalink: /examples/$$example/" >> _examples/$$example.md; \
 			echo "example_name: $$example" >> _examples/$$example.md; \
 			echo "---" >> _examples/$$example.md; \
 			echo "" >> _examples/$$example.md; \
-			cat $$dir/README.md | sed '1{/^# /d;}' >> _examples/$$example.md; \
+			sed -e '1{/^# /d;}' \
+			    -e '/^!\[[^]]*\]([^)]*)$$/d' \
+			    $$dir/README.md >> _examples/$$example.md; \
 			echo "Created example page for $$example"; \
 		fi; \
 	done

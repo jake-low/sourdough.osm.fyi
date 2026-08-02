@@ -1,0 +1,111 @@
+---
+layout: default
+---
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/dist/maplibre-gl.css">
+
+<div class="showcase">
+  <div class="showcase-toolbar">
+    <span>
+      <a href="https://github.com/jake-low/sourdough-examples/tree/main/{{ page.slug }}/style.js">Source code</a>
+      &middot;
+      <a href="/assets/examples/{{ page.example_name }}.json">Stylesheet</a>
+    </span>
+    <label>
+      <input type="checkbox" id="compare"> Compare with Americana</a>
+    </label>
+  </div>
+
+  <div class="showcase-panes">
+    <div class="showcase-pane" id="reference-pane" hidden>
+      <div class="label">Americana (OpenMapTiles)</div>
+      <div class="map" id="reference-map"></div>
+    </div>
+    <div class="showcase-pane">
+      <div class="label">Americanish (Sourdough)</div>
+      <div class="map" id="showcase-map"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import maplibregl from 'https://cdn.jsdelivr.net/npm/maplibre-gl@5.24.0/+esm';
+  import { renderIcons } from '/assets/examples/{{ page.example_name }}/icons.js';
+
+  const showcase = document.querySelector('.showcase');
+  const compare = document.getElementById('compare');
+  const referencePane = document.getElementById('reference-pane');
+
+  const map = new maplibregl.Map({
+    container: 'showcase-map',
+    style: await fetch('/assets/examples/{{ page.example_name }}.json').then((r) => r.json()),
+    hash: true,
+  });
+  map.addControl(new maplibregl.NavigationControl());
+  renderIcons(map);
+
+  // Mirror camera moves between maps. The guard keeps the jumpTo-induced move
+  // events from bouncing back and fighting the gesture in progress.
+  function syncMaps(maps) {
+    let syncing = false;
+    const follow = (source) => {
+      if (syncing) return;
+      syncing = true;
+      const camera = {
+        center: source.getCenter(),
+        zoom: source.getZoom(),
+        bearing: source.getBearing(),
+        pitch: source.getPitch(),
+      };
+      for (const map of maps) {
+        if (map !== source) map.jumpTo(camera);
+      }
+      syncing = false;
+    };
+    for (const map of maps) map.on('move', () => follow(map));
+  }
+
+  // Americana's own tiles and style are only fetched if the reader asks for the
+  // comparison, so the default page load doesn't hit their servers.
+  async function createReferenceMap() {
+    // Americana ships hillshading turned off (its UI has a toggle for it);
+    // americanish draws it unconditionally, so switch it on here to match.
+    const style = await fetch('https://americanamap.org/style.json').then((r) => r.json());
+    style.layers.find((l) => l.id === 'hillshading').layout.visibility = 'visible';
+
+    const reference = new maplibregl.Map({
+      container: 'reference-map',
+      style,
+      center: map.getCenter(),
+      zoom: map.getZoom(),
+      bearing: map.getBearing(),
+      pitch: map.getPitch(),
+    });
+    renderIcons(reference);
+    syncMaps([map, reference]);
+    return reference;
+  }
+
+  let reference = null;
+
+  compare.addEventListener('change', async () => {
+    showcase.classList.toggle('comparing', compare.checked);
+    referencePane.hidden = !compare.checked;
+    map.resize();
+
+    if (!compare.checked) return;
+    if (!reference) {
+      reference = await createReferenceMap();
+    } else {
+      reference.resize();
+      reference.jumpTo({
+        center: map.getCenter(),
+        zoom: map.getZoom(),
+        bearing: map.getBearing(),
+        pitch: map.getPitch(),
+      });
+    }
+  });
+</script>
+
+{{ content }}
